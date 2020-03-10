@@ -19,10 +19,7 @@ EndProcedure
 
 Procedure.a CollisionCircleCircle(*Circle1.TCircle, *Circle2.TCircle)
   DistX.f = *Circle1\x - *Circle2\x : DistY.f = *Circle1\y - *Circle2\y
-  Radius.f = *Circle1\Radius + *Circle2\Radius
-;   Distance = Sqr((DistX * DistX) + (DistY * DistY))
-;   ProcedureReturn Bool(Distance <= *Circle1\Radius + *Circle2\Radius)
-  ProcedureReturn Bool(Abs((DistX * DistX) + (DistY * DistY)) <= (Radius * Radius))
+  ProcedureReturn Bool(Abs((DistX * DistX) + (DistY * DistY)) <= (*Circle1\Radius + *Circle2\Radius))
 EndProcedure
 
 Procedure Setup()
