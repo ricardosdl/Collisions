@@ -47,14 +47,6 @@ Procedure.a CollisionRectRect(*Rect1.TRect, *Rect2.TRect)
   ProcedureReturn Bool(RightAndLeft And TopAndBottom)
 EndProcedure
 
-Procedure.a CollisionLinePoint(*Line.TLine, *Point.TPoint)
-  Dist1 = Distance(*Point\x, *Point\y, *Line\x1, *Line\y1)
-  Dist2 = Distance(*Point\x, *Point\y, *Line\x2, *Line\y2)
-  LineLength.f = Distance(*Line\x1, *Line\y1, *Line\x2, *Line\y2)
-  Buffer.f = 0.1
-  ProcedureReturn Bool(Dist1 + Dist2 >= LineLength - Buffer And Dist1 + Dist2 <= LineLength + Buffer)
-EndProcedure
-
 Procedure.a CollisionCircleRect(*Circle.TCircle, *Rect.TRect)
   TestX.f = *Circle\x : TestY.f = *Circle\y
   If *Circle\x < *Rect\x
@@ -69,6 +61,14 @@ Procedure.a CollisionCircleRect(*Circle.TCircle, *Rect.TRect)
   EndIf
   DistX.f = *Circle\x - TestX : DistY.f = *Circle\y - TestY
   ProcedureReturn Bool((DistX * DistX + DistY * DistY) <= Pow(*Circle\Radius, 2))
+EndProcedure
+
+Procedure.a CollisionLinePoint(*Line.TLine, *Point.TPoint)
+  Dist1.f = Distance(*Point\x, *Point\y, *Line\x1, *Line\y1)
+  Dist2.f = Distance(*Point\x, *Point\y, *Line\x2, *Line\y2)
+  LineLength.f = Distance(*Line\x1, *Line\y1, *Line\x2, *Line\y2)
+  Buffer.f = 0.1
+  ProcedureReturn Bool(Dist1 + Dist2 >= LineLength - Buffer And Dist1 + Dist2 <= LineLength + Buffer)
 EndProcedure
 
 
