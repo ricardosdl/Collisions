@@ -38,16 +38,33 @@ Procedure.a CollisionRectRect(*Rect1.TRect, *Rect2.TRect)
   ProcedureReturn Bool(RightAndLeft And TopAndBottom)
 EndProcedure
 
+Procedure.a CollisionCircleRect(*Circle.TCircle, *Rect.TRect)
+  TestX.f = *Circle\x : TestY.f = *Circle\y
+  If *Circle\x < *Rect\x
+    TestX = *Rect\x
+  ElseIf *Circle\x > *Rect\x + *Rect\Width
+    TestX = *Rect\x + *Rect\Width
+  EndIf
+  If *Circle\y < *Rect\y
+    TestY = *Rect\y
+  ElseIf *Circle\y > *Rect\y + *Rect\Height
+    TestY = *Rect\y + *Rect\Height
+  EndIf
+  DistX.f = *Circle\x - TestX : DistY.f = *Circle\y - TestY
+  ProcedureReturn Bool((DistX * DistX + DistY * DistY) <= Pow(*Circle\Radius, 2))
+EndProcedure
+
+
 
 Procedure Setup()
-  MouseRect\x = 0 : MouseRect\y = 0 : MouseRect\Width = 30 : MouseRect\Height = 30
+  MouseCircle\x = 0 : MouseCircle\y = 0 : MouseCircle\Radius = 30
   CenterRect\x = 200 : CenterRect\y = 100 : CenterRect\Width = 200 : CenterRect\Height = 200
 EndProcedure
 
 Procedure Update(Elapsed.f)
-  MouseRect\x = MouseX() : MouseRect\y = MouseY()
+  MouseCircle\x = MouseX() : MouseCircle\y = MouseY()
   
-  If CollisionRectRect(@MouseRect, @CenterRect)
+  If CollisionCircleRect(@MouseCircle, @CenterRect)
     CollisionColor = RGB(255, 150, 0)
   Else
     CollisionColor = RGB(0, 150, 255)
@@ -57,7 +74,7 @@ EndProcedure
 Procedure Draw()
   StartDrawing(ScreenOutput())
   Box(CenterRect\x, CenterRect\y, CenterRect\Width, CenterRect\Height, CollisionColor)
-  Box(MouseRect\x, MouseRect\y, MouseRect\Width, MouseRect\Height, RGB(0, $F5, $10))
+  Circle(MouseCircle\x, MouseCircle\y, MouseCircle\Radius, RGB(0, $F5, $10))
   StopDrawing()
 EndProcedure
 
