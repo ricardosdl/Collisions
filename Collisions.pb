@@ -4,8 +4,12 @@ EndStructure
 Structure TCircle
   x.f : y.f : Radius.f
 EndStructure
+Structure TRect
+  x.f : y.f : Width.f : Height.f
+EndStructure
 Global ElapsedTimneInS.f, LastTimeInMs.q, ExitGame.a = #False
-Global MousePoint.TPoint, CenterPoint.TPoint, Circle.TCircle, MouseCircle.TCircle, CircleColor.i = RGB(0, 150, 255)
+Global MousePoint.TPoint, CenterPoint.TPoint, Circle.TCircle, MouseCircle.TCircle, CollisionColor.i = RGB(0, 150, 255)
+Global CenterRect.TRect
 
 Procedure.a CollisionPointPoint(x1.f, y1.f, x2.f, y2.f)
   ProcedureReturn Bool(x1 = x2 And y1 = y2)
@@ -22,42 +26,31 @@ Procedure.a CollisionCircleCircle(*Circle1.TCircle, *Circle2.TCircle)
   ProcedureReturn Bool(Abs((DistX * DistX) + (DistY * DistY)) <= Pow(*Circle1\Radius + *Circle2\Radius, 2))
 EndProcedure
 
+Procedure.a CollisionPointRect(*Point.TPoint, *Rect.TRect)
+  RightAndLeft.a = Bool(*Point\x >= *Rect\x And *Point\x <= *Rect\x + *Rect\Width)
+  BelowAndAbove.a = Bool(*Point\y >= *Rect\y And *Point\y <= *Rect\y + *Rect\Height)
+  ProcedureReturn Bool(RightAndLeft And BelowAndAbove)
+EndProcedure
+
 Procedure Setup()
-  Circle\x = 400 : Circle\y = 300 : Circle\Radius = 100
-  MouseCircle\x = 0 : MouseCircle\y = 0 : MouseCircle\Radius = 30
+  MousePoint\x = 0 : MousePoint\y = 0
+  CenterRect\x = 200 : CenterRect\y = 100 : CenterRect\Width = 200 : CenterRect\Height = 200
 EndProcedure
 
 Procedure Update(Elapsed.f)
   MousePoint\x = MouseX() : MousePoint\y = MouseY()
-  
   MouseCircle\x = MouseX() : MouseCircle\y = MouseY()
-  
-  If CollisionCircleCircle(@MouseCircle, @Circle)
-    CircleColor = RGB(255, 150, 0)
-    DistX.f = MouseCircle\x - Circle\x : DistY.f = MouseCircle\y - Circle\y
-    Distance = Sqr((DistX * DistX) + (DistY * DistY))
-    MidPointX.f = (MouseCircle\x + Circle\x) / 2
-    MidPointY.f = (MouseCircle\y + Circle\y) / 2
-    MinDistance.f = MouseCircle\Radius + Circle\Radius + 1.0
-    ;MouseCircle\x = MidPointX + MouseCircle\Radius * (MouseCircle\x - Circle\x) / Distance
-    ;MouseCircle\y = MidPointY + MouseCircle\Radius * (MouseCircle\y - Circle\y) / Distance
-    Circle\x = MidPointX + Circle\Radius * (Circle\x  - MouseCircle\x) / Distance
-    Circle\y = MidPointY + Circle\Radius * (Circle\y  - MouseCircle\y) / Distance
+  If CollisionPointRect(@MousePoint, @CenterRect)
+    CollisionColor = RGB(255, 150, 0)
   Else
-    CircleColor = RGB(0, 150, 255)
+    CollisionColor = RGB(0, 150, 255)
   EndIf
-  
-  
-  
 EndProcedure
 
 Procedure Draw()
   StartDrawing(ScreenOutput())
-  ;Plot(CenterPoint\x, CenterPoint\y, RGB($FF, $AA, $10))
-  Circle(Circle\x, Circle\y, Circle\Radius, CircleColor)
-  
-  ;Plot(MousePoint\x, MousePoint\y, RGB(0, $F5, $10))
-  Circle(MouseCircle\x, MouseCircle\y, MouseCircle\Radius, RGB(0, $F5, $10))
+  Box(CenterRect\x, CenterRect\y, CenterRect\Width, CenterRect\Height, CollisionColor)
+  Circle(MousePoint\x, MousePoint\y, 5, RGB(0, $F5, $10))
   StopDrawing()
 EndProcedure
 
