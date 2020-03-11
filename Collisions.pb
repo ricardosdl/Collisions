@@ -7,9 +7,18 @@ EndStructure
 Structure TRect
   x.f : y.f : Width.f : Height.f
 EndStructure
+Structure TLine
+  x1.f : y1.f : x2.f : y2.f
+EndStructure
+
 Global ElapsedTimneInS.f, LastTimeInMs.q, ExitGame.a = #False
 Global MousePoint.TPoint, CenterPoint.TPoint, Circle.TCircle, MouseCircle.TCircle, CollisionColor.i = RGB(0, 150, 255)
-Global CenterRect.TRect, MouseRect.TRect
+Global CenterRect.TRect, MouseRect.TRect, CenterLine.TLine
+
+Procedure.f Distance(x1.f, y1.f, x2.f, y2.f)
+  DistX.f = x1 - x2 : DistY.f = y1 - y2
+  ProcedureReturn Sqr(Pow(DistX, 2) + Pow(DistY, 2))
+EndProcedure
 
 Procedure.a CollisionPointPoint(x1.f, y1.f, x2.f, y2.f)
   ProcedureReturn Bool(x1 = x2 And y1 = y2)
@@ -38,6 +47,14 @@ Procedure.a CollisionRectRect(*Rect1.TRect, *Rect2.TRect)
   ProcedureReturn Bool(RightAndLeft And TopAndBottom)
 EndProcedure
 
+Procedure.a CollisionLinePoint(*Line.TLine, *Point.TPoint)
+  Dist1 = Distance(*Point\x, *Point\y, *Line\x1, *Line\y1)
+  Dist2 = Distance(*Point\x, *Point\y, *Line\x2, *Line\y2)
+  LineLength.f = Distance(*Line\x1, *Line\y1, *Line\x2, *Line\y2)
+  Buffer.f = 0.1
+  ProcedureReturn Bool(Dist1 + Dist2 >= LineLength - Buffer And Dist1 + Dist2 <= LineLength + Buffer)
+EndProcedure
+
 Procedure.a CollisionCircleRect(*Circle.TCircle, *Rect.TRect)
   TestX.f = *Circle\x : TestY.f = *Circle\y
   If *Circle\x < *Rect\x
@@ -57,14 +74,14 @@ EndProcedure
 
 
 Procedure Setup()
-  MouseCircle\x = 0 : MouseCircle\y = 0 : MouseCircle\Radius = 30
-  CenterRect\x = 200 : CenterRect\y = 100 : CenterRect\Width = 200 : CenterRect\Height = 200
+  MousePoint\x = 0 : MousePoint\y = 0
+  CenterLine\x1 = 100 : CenterLine\y1 = 300 : CenterLine\x2 = 500 : CenterLine\y2 = 100
 EndProcedure
 
 Procedure Update(Elapsed.f)
-  MouseCircle\x = MouseX() : MouseCircle\y = MouseY()
+  MousePoint\x = MouseX() : MousePoint\y = MouseY()
   
-  If CollisionCircleRect(@MouseCircle, @CenterRect)
+  If CollisionLinePoint(@CenterLine, @MousePoint)
     CollisionColor = RGB(255, 150, 0)
   Else
     CollisionColor = RGB(0, 150, 255)
@@ -73,8 +90,9 @@ EndProcedure
 
 Procedure Draw()
   StartDrawing(ScreenOutput())
-  Box(CenterRect\x, CenterRect\y, CenterRect\Width, CenterRect\Height, CollisionColor)
-  Circle(MouseCircle\x, MouseCircle\y, MouseCircle\Radius, RGB(0, $F5, $10))
+  LineXY(CenterLine\x1, CenterLine\y1, CenterLine\x2, CenterLine\y2, CollisionColor)
+  ;Box(CenterPoint\x, CenterPoint\y, 5, CenterRect\Height, CollisionColor)
+  Circle(MousePoint\x, MousePoint\y, 5, RGB(0, $F5, $10))
   StopDrawing()
 EndProcedure
 
