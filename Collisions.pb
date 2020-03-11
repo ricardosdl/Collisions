@@ -9,7 +9,7 @@ Structure TRect
 EndStructure
 Global ElapsedTimneInS.f, LastTimeInMs.q, ExitGame.a = #False
 Global MousePoint.TPoint, CenterPoint.TPoint, Circle.TCircle, MouseCircle.TCircle, CollisionColor.i = RGB(0, 150, 255)
-Global CenterRect.TRect
+Global CenterRect.TRect, MouseRect.TRect
 
 Procedure.a CollisionPointPoint(x1.f, y1.f, x2.f, y2.f)
   ProcedureReturn Bool(x1 = x2 And y1 = y2)
@@ -32,15 +32,22 @@ Procedure.a CollisionPointRect(*Point.TPoint, *Rect.TRect)
   ProcedureReturn Bool(RightAndLeft And BelowAndAbove)
 EndProcedure
 
+Procedure.a CollisionRectRect(*Rect1.TRect, *Rect2.TRect)
+  RightAndLeft.a = Bool(*Rect1\x + *Rect1\Width >= *Rect2\x And *Rect1\x <= *Rect2\x + *Rect2\Width)
+  TopAndBottom.a = Bool(*Rect1\y + *Rect1\Height >= *Rect2\y And *Rect1\y <= *Rect2\y + *Rect2\Height)
+  ProcedureReturn Bool(RightAndLeft And TopAndBottom)
+EndProcedure
+
+
 Procedure Setup()
-  MousePoint\x = 0 : MousePoint\y = 0
+  MouseRect\x = 0 : MouseRect\y = 0 : MouseRect\Width = 30 : MouseRect\Height = 30
   CenterRect\x = 200 : CenterRect\y = 100 : CenterRect\Width = 200 : CenterRect\Height = 200
 EndProcedure
 
 Procedure Update(Elapsed.f)
-  MousePoint\x = MouseX() : MousePoint\y = MouseY()
-  MouseCircle\x = MouseX() : MouseCircle\y = MouseY()
-  If CollisionPointRect(@MousePoint, @CenterRect)
+  MouseRect\x = MouseX() : MouseRect\y = MouseY()
+  
+  If CollisionRectRect(@MouseRect, @CenterRect)
     CollisionColor = RGB(255, 150, 0)
   Else
     CollisionColor = RGB(0, 150, 255)
@@ -50,7 +57,7 @@ EndProcedure
 Procedure Draw()
   StartDrawing(ScreenOutput())
   Box(CenterRect\x, CenterRect\y, CenterRect\Width, CenterRect\Height, CollisionColor)
-  Circle(MousePoint\x, MousePoint\y, 5, RGB(0, $F5, $10))
+  Box(MouseRect\x, MouseRect\y, MouseRect\Width, MouseRect\Height, RGB(0, $F5, $10))
   StopDrawing()
 EndProcedure
 
