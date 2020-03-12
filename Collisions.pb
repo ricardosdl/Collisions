@@ -13,7 +13,7 @@ EndStructure
 
 Global ElapsedTimneInS.f, LastTimeInMs.q, ExitGame.a = #False
 Global MousePoint.TPoint, CenterPoint.TPoint, Circle.TCircle, MouseCircle.TCircle, CollisionColor.i = RGB(0, 150, 255)
-Global CenterRect.TRect, MouseRect.TRect, CenterLine.TLine
+Global CenterRect.TRect, MouseRect.TRect, CenterLine.TLine, ClosestPoint.TPoint
 
 Procedure.f Distance(x1.f, y1.f, x2.f, y2.f)
   DistX.f = x1 - x2 : DistY.f = y1 - y2
@@ -71,17 +71,33 @@ Procedure.a CollisionLinePoint(*Line.TLine, *Point.TPoint)
   ProcedureReturn Bool(Dist1 + Dist2 >= LineLength - Buffer And Dist1 + Dist2 <= LineLength + Buffer)
 EndProcedure
 
+Procedure.a CollisionLineCircle(*Line.TLine, *Circle.TCircle)
+  LinePoint1.TPoint\x = *Line\x1 : LinePoint1\y = *Line\y1
+  LinePoint2.TPoint\x = *Line\x2 : LinePoint2\y = *Line\y2
+  Inside.a = Bool(CollisionPointCircle(LinePoint1, *Circle) Or CollisionPointCircle(LinePoint2, *Circle))
+  If Inside : ProcedureReturn #True : EndIf
+  LineLength.f = Distance(*Line\x1, *Line\y1, *Line\x2, *Line\y2)
+  Dot.f = ((*Circle\x - *Line\x1) * (*Line\x2 - *Line\x1) + (*Circle\y - *Line\y1) * (*Line\y2 - *Line\y1)) / Pow(LineLength, 2)
+  ClosestPointOnLine.TPoint\x = *Line\x1 + (Dot * (*Line\x2 - *Line\x1))
+  ClosestPointOnLine\y = *Line\y1 + (Dot * (*Line\y2 - *Line\y1))
+  ClosestPoint = ClosestPointOnLine
+  OnLineSegment.a = CollisionLinePoint(*Line, ClosestPointOnLine)
+  If Not OnLineSegment : ProcedureReturn #False : EndIf
+  DistancePointCircle.f = Distance(ClosestPointOnLine\x, ClosestPointOnLine\y, *Circle\x, *Circle\y)
+  ProcedureReturn Bool(DistancePointCircle <= *Circle\Radius)
+EndProcedure
+
 
 
 Procedure Setup()
-  MousePoint\x = 0 : MousePoint\y = 0
+  MouseCircle\x = 0 : MouseCircle\y = 0 : MouseCircle\Radius = 30
   CenterLine\x1 = 100 : CenterLine\y1 = 300 : CenterLine\x2 = 500 : CenterLine\y2 = 100
 EndProcedure
 
 Procedure Update(Elapsed.f)
-  MousePoint\x = MouseX() : MousePoint\y = MouseY()
+  MouseCircle\x = MouseX() : MouseCircle\y = MouseY()
   
-  If CollisionLinePoint(@CenterLine, @MousePoint)
+  If CollisionLineCircle(@CenterLine, @MouseCircle)
     CollisionColor = RGB(255, 150, 0)
   Else
     CollisionColor = RGB(0, 150, 255)
@@ -91,8 +107,8 @@ EndProcedure
 Procedure Draw()
   StartDrawing(ScreenOutput())
   LineXY(CenterLine\x1, CenterLine\y1, CenterLine\x2, CenterLine\y2, CollisionColor)
-  ;Box(CenterPoint\x, CenterPoint\y, 5, CenterRect\Height, CollisionColor)
-  Circle(MousePoint\x, MousePoint\y, 5, RGB(0, $F5, $10))
+  Circle(MouseCircle\x, MouseCircle\y, MouseCircle\Radius, RGB(0, $F5, $10))
+  Circle(ClosestPoint\x, ClosestPoint\y, 5, RGB(255, 0, 0))
   StopDrawing()
 EndProcedure
 
